@@ -1,5 +1,6 @@
 package com.bodakesatish.statehandler
 
+import androidx.compose.runtime.mutableStateListOf
 import androidx.core.app.Person
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -33,6 +34,9 @@ class PeopleViewModel : ViewModel() {
             initialValue = PeopleScreenState()
         )
 
+    private val _people = mutableStateListOf<PersonUi>()
+    val people: List<PersonUi> get() = _people
+
     fun onAction(action: PeopleAction) {
         when (action) {
             is PeopleAction.OnLoadDetailsClick -> {
@@ -42,21 +46,11 @@ class PeopleViewModel : ViewModel() {
     }
 
     private fun loadsDetails(personId: Int) {
-
-        _state.update {
-            it.copy(
-                people = it.people.map { person ->
-                    if (person.id == personId) {
-                        person.copy(
-                            detailsLoadingProgress = 0f,
-                            isLoadingDetails = true
-                        )
-                    } else {
-                        person
-                    }
-                }
-            )
-        }
+        val index = people.indexOfFirst { it.id == personId }
+        _people[index] = _people[index].copy(
+            detailsLoadingProgress = 0f,
+            isLoadingDetails = true
+        )
 
         val progressFlow = flow<Float> {
             var currentProgress = 0f
@@ -70,36 +64,18 @@ class PeopleViewModel : ViewModel() {
 
         progressFlow
             .onEach { progress ->
-                _state.update {
-                    it.copy(
-                        people = it.people.map { person ->
-                            if (person.id == personId) {
-                                person.copy(
-                                    detailsLoadingProgress = progress
-                                )
-                            } else {
-                                person
-                            }
-                        }
-                    )
-
-                }
+                _people[index] = _people[index].copy(
+                    detailsLoadingProgress = progress,
+                    isLoadingDetails = true
+                )
             }.onCompletion {
-                _state.update { it.copy(
-                    people = it.people.map { person ->
-                        if (person.id == personId) {
-                            person.copy(
-                                details = PersonDetails(
-                                    phoneNumber = "+1 234 544 434",
-                                    bio = "This is a sample bio"
-                                ),
-                                isLoadingDetails = false
-                            )
-                        } else {
-                            person
-                        }
-                    }
-                ) }
+                _people[index] = _people[index].copy(
+                    details = PersonDetails(
+                        phoneNumber = "+1 234 544 434",
+                        bio = "This is a sample bio"
+                    ),
+                    isLoadingDetails = false,
+                )
             }.launchIn(viewModelScope)
 
     }
@@ -114,10 +90,11 @@ class PeopleViewModel : ViewModel() {
             delay(3000L)
             _state.update {
                 it.copy(
-                    isLoading = false,
-                    people = dummyPeople
+                    isLoading = false
                 )
             }
+            _people.clear()
+            _people.addAll(dummyPeople)
         }
     }
 

@@ -24,7 +24,10 @@ import androidx.compose.ui.unit.sp
 
 @Composable
 fun PersonItem(
-    personUi: PersonUi,
+    name: String,
+    details: PersonDetails?,
+    isLoadingDetails: Boolean,
+    progress: () -> Float,
     onLoadDetailsClick: () -> Unit,
     modifier: Modifier  = Modifier
 ) {
@@ -39,7 +42,7 @@ fun PersonItem(
     {
         Row {
             Text(
-                text = personUi.name,
+                text = name,
                 fontSize = MaterialTheme.typography.titleLarge.fontSize,
                 modifier = Modifier
                     .fillMaxWidth()
@@ -49,22 +52,22 @@ fun PersonItem(
         Spacer(modifier = Modifier.height(16.dp))
 
         when {
-            personUi.details != null -> {
+            details != null -> {
                 Text(
-                    text = personUi.details.bio,
+                    text = details.bio,
                     modifier = Modifier.fillMaxWidth()
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    text = personUi.details.phoneNumber,
+                    text = details.phoneNumber,
                     modifier = Modifier.fillMaxWidth(),
                     textAlign = TextAlign.Right,
                     fontSize = 12.sp
                 )
             }
-            personUi.isLoadingDetails -> {
+            isLoadingDetails -> {
                 LinearProgressIndicator(
-                    progress = { personUi.detailsLoadingProgress },
+                    progress = progress,
                     modifier = Modifier
                         .fillMaxWidth()
                 )

@@ -4,8 +4,7 @@ import androidx.compose.runtime.Stable
 
 @Stable
 data class PeopleScreenState(
-    val isLoading: Boolean = false,
-    val people: List<PersonUi> = emptyList()
+    val isLoading: Boolean = false
 )
 
 data class PersonUi(
